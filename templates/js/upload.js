@@ -63,7 +63,6 @@ var UploadForm = React.createClass({
         name: null,
         description: null,
         subtitle: null,
-        keywords: [],
       },
       progress: 0
     };
@@ -106,9 +105,38 @@ var UploadForm = React.createClass({
     this.setState({audioFile: file});
   },
   submit: function() {
+    var missingFields = this.getMissingFields();
+    if (missingFields) {
+      this.failValidation(missingFields);
+      return;
+    }
     this.setState({isUploading: true});
     this.sendAudioFileRequest(
       this.sendPodcastRequest);
+  },
+  failValidation: function(missingFields) {
+    var content = (
+      <span>
+        <strong>Hold your horses!</strong> The following fields must be filled out:
+        <p>{missingFields}</p>
+      </span>
+    );
+    this.props.updateAlert(content, 'danger');
+  },
+  getMissingFields: function() {
+    var invalidAttrs = [];
+    for (var key in this.state.formData) {
+      if (!this.state.formData[key]) {
+        invalidAttrs.push(key);
+      }
+    }
+    if (!this.state.audioFile) {
+      invalidAttrs.push('audio file');
+    }
+    if (invalidAttrs.length > 0) {
+      return invalidAttrs.join(', ');
+    }
+    return null;
   },
   sendAudioFileRequest: function(callback) {
     var _this = this;
@@ -241,7 +269,6 @@ var PodcastForm = React.createClass({
         {this.getNameFormGroup()}
         {this.getDescriptionFormGroup()}
         {this.getSubtitleFormGroup()}
-        {this.getKeywordsFormGroup()}
         {this.getAudioFormGroup()}
         {this.getSubmitButton()}
       </form>
@@ -250,7 +277,7 @@ var PodcastForm = React.createClass({
   getNameFormGroup: function() {
     return (
       <div className="form-group">
-        <label>Episode Name</label>
+        <label>Episode Name <small className="help-text">(Sermon Title)</small></label>
         <input type="text" className="form-control" placeholder="Name"
                value={this.props.data.name}
                onChange={(e) => this.props.onUpdate('name', e.target.value)}/>
@@ -270,37 +297,12 @@ var PodcastForm = React.createClass({
   getSubtitleFormGroup: function() {
     return (
       <div className="form-group">
-        <label>Subtitle</label>
+        <label>Subtitle <small className="help-text">(Sermon Series)</small></label>
         <input type="text" className="form-control" placeholder="A subtitle for this episode"
                value={this.props.data.subtitle}
                onChange={(e) => this.props.onUpdate('subtitle', e.target.value)}/>
       </div>
     );
-  },
-  getKeywordsFormGroup: function() {
-    return (
-      <div className="form-group">
-        <label>Keywords</label>
-        <Select.Creatable className="select-createable"
-                          options={[]}
-                          multi={true}
-                          onChange={this.handleKeywordChange}
-                          value={this.getKeywordsForCreatable()}
-                          placeholder={"Add keywords..."}
-                          noResultsText='' />
-      </div>
-    );
-  },
-  handleKeywordChange: function(newKeywords) {
-    var keywords = newKeywords.map(function(keyword) {
-      return keyword.value;
-    });
-    this.props.onUpdate('keywords', keywords);
-  },
-  getKeywordsForCreatable: function() {
-    return this.props.data.keywords.map(function(keyword) {
-      return {label: keyword, value: keyword};
-    });
   },
   getAudioFormGroup: function() {
     return (

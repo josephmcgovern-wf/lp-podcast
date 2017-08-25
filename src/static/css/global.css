@@ -2,3 +2,7 @@ input.invalid {
     border-color: #d9534f;
     outline-color: #d9534f;
 }
+
+.help-text {
+  color: #777777
+}

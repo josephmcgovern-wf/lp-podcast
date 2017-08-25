@@ -28,7 +28,8 @@ class Bucket(object):
 
     @classmethod
     def _get_filepath(cls, name):
-        return '%s/%s' % (config.BASE_URL, name)
+        bucket_name = EnvVar.get('bucket_name')
+        return '%s/%s/%s' % (config.BASE_URL, bucket_name, name)
 
     @classmethod
     def _get_filename(cls, file_object):
@@ -37,13 +38,15 @@ class Bucket(object):
     @classmethod
     def _get_bucket(cls):
         s3 = cls._get_s3()
-        bucket = s3.Bucket(config.BUCKET_NAME)
+        bucket_name = EnvVar.get('bucket_name')
+        bucket = s3.Bucket(bucket_name)
         return bucket
 
     @classmethod
     def _get_file_obj(cls, path):
         s3 = cls._get_s3()
-        obj = s3.Object(config.BUCKET_NAME, path)
+        bucket_name = EnvVar.get('bucket_name')
+        obj = s3.Object(bucket_name, path)
         return obj
 
     @classmethod
