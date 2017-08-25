@@ -1,8 +1,8 @@
 from flask import render_template
-from flask.views import MethodView
+from src.views.base_view import BaseView
 
 
-class HomeView(MethodView):
+class HomeView(BaseView):
 
     def get(self):
         return render_template('index.html')

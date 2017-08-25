@@ -1,10 +1,11 @@
 from flask import render_template
-from flask.views import MethodView
 
 from google.appengine.ext import blobstore
 
+from src.views.base_view import BaseView
 
-class UploadView(MethodView):
+
+class UploadView(BaseView):
 
     def get(self):
         upload_url = blobstore.create_upload_url(

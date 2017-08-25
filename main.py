@@ -5,7 +5,6 @@ from src.views.index import setup_urls as index_setup_urls
 
 app = Flask(__name__)
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.config['MAX_CONTENT_LENGTH'] = 512 * 1024 * 1024    # 512 Mb limit
 app.secret_key = 'MySuperSecretKey'
 
 index_setup_urls(app)
