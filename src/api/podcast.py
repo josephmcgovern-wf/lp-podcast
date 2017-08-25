@@ -1,7 +1,10 @@
 from flask import request
 import json
-from src.aws.bucket import Bucket
+import re
 
+from google.appengine.ext import blobstore
+
+from src.aws.bucket import Bucket
 from src.podcast.podcast import Podcast
 from src.views.base_view import BaseView
 
@@ -29,6 +32,15 @@ class AudioFileAPI(BaseView):
             return json.dumps({'url': link})
         except Exception as e:
             return e.message, 500
+
+    def _delete_blob_key(self):
+        pattern = 'blob-key="(.*)";'
+        headers = request.headers['Content-Type']
+        match = re.search(pattern, headers)
+        if not match:
+            return
+        key = match.group(1)
+        blobstore.delete(key)
 
 
 def setup_urls(app):
