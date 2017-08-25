@@ -1,4 +1,5 @@
 var Alert = ReactBootstrap.Alert;
+var ProgressBar = ReactBootstrap.ProgressBar;
 
 var audio = new Audio();
 var DURATION = null;
@@ -26,7 +27,7 @@ var UploadPage = React.createClass({
         <div>
           <p className="text-muted">Please fill out the information below</p>
         </div>
-        <div className="row">
+        <div>
           <UploadForm updateAlert={this.updateAlert}/>
         </div>
       </div>
@@ -63,38 +64,38 @@ var UploadForm = React.createClass({
         description: null,
         subtitle: null,
         keywords: [],
-      }
+      },
+      progress: 0
     };
   },
   render: function() {
-    this.props.podcastForm = (
-      <PodcastForm data={this.state.formData}
-                       onUpdate={this.updateData}
-                       onSubmit={this.submit}
-                       isUploading={this.state.isUploading}
-                       onAudioFileChange={this.updateAudioFile}
-                       ref="podcastForm"/>
-    );
     return (
       <div>
-        <div className="col-md-5">
-          {this.props.podcastForm}
+        <div className="row">
+          <div className="col-md-5">
+            <PodcastForm data={this.state.formData}
+                         onUpdate={this.updateData}
+                         onSubmit={this.submit}
+                         isUploading={this.state.isUploading}
+                         onAudioFileChange={this.updateAudioFile}
+                         ref="podcastForm"/>
+          </div>
         </div>
-        <div className="col-md-4 col-md-offset-1" style={ {display: 'none'} }>
-          <div className="text-center">
-            <img className="img-responsive" src="http://www.planwallpaper.com/static/images/abstract-colourful-cool-wallpapers-55ec7905a6a4f.jpg" />
-            <button className="btn btn-primary btn-lg" style={ {marginTop: '1em'} }>
-              Upload Episode Image
-            </button>
-            <div className="checkbox">
-                <label>
-                  <input type="checkbox" /> Use the same image as last time
-                </label>
-            </div>
+        <div className="row">
+          <div className="col-md-12" style={ {marginTop: '1.5em'} }>
+            {this.getProgressBar()}
           </div>
         </div>
       </div>
     )
+  },
+  getProgressBar: function() {
+    if (!this.state.isUploading) {
+      return null;
+    }
+    return (
+      <ProgressBar now={this.state.progress} />
+    );
   },
   updateData: function(formName, formValue) {
     var formData = this.state.formData;
@@ -121,7 +122,15 @@ var UploadForm = React.createClass({
       processData: false,
       contentType: false,
       cache: false,
+      xhr: function() {
+        var myXhr = $.ajaxSettings.xhr();
+        if(myXhr.upload){
+          myXhr.upload.addEventListener('progress', _this.updateProgressFromFileUpload, false);
+        }
+        return myXhr;
+      },
       success: function(jsonifiedData) {
+        _this.setState({progress: 90});
         var data = JSON.parse(jsonifiedData);
         var audioUrl = data.url
         if (callback) {
@@ -145,6 +154,14 @@ var UploadForm = React.createClass({
       },
     });
   },
+  updateProgressFromFileUpload: function(e) {
+    if (e.lengthComputable) {
+      var max = e.total;
+      var current = e.loaded;
+      var percentage = (current * 100)/max;
+      this.setState({progress: percentage * 0.8});
+    }
+  },
   sendPodcastRequest: function(audioUrl) {
     var _this = this;
     var data = this.state.formData;
@@ -158,6 +175,7 @@ var UploadForm = React.createClass({
       data: JSON.stringify(data),
       contentType: 'application/json',
       success: function(data) {
+        _this.setState({progress: 100});
         var content = (
           <span>
             <p>
