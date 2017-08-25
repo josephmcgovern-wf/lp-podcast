@@ -1,8 +1,8 @@
 import boto3
-import tempfile
 from werkzeug.utils import secure_filename
 
 from src import config
+from src.settings.env_var import EnvVar
 
 
 class Bucket(object):
@@ -14,10 +14,8 @@ class Bucket(object):
 
     @classmethod
     def update_file_contents(cls, path, contents):
-        tf = tempfile.TemporaryFile()
-        tf.write(contents)
         obj = cls._get_file_obj(path)
-        obj.put(Body=tf)
+        obj.put(Body=contents)
 
     @classmethod
     def upload_file(cls, file_object):
@@ -50,8 +48,10 @@ class Bucket(object):
 
     @classmethod
     def _get_s3(cls):
+        ak = EnvVar.get('s3_access_key')
+        sk = EnvVar.get('s3_secret_key')
         s3 = boto3.resource(
             's3',
-            aws_access_key_id=config.AK,
-            aws_secret_access_key=config.SK)
+            aws_access_key_id=ak,
+            aws_secret_access_key=sk)
         return s3

@@ -18,10 +18,10 @@ class Podcast(ndb.Model):
 
     @property
     def duration_string(self):
-        seconds = round(self.duration % 60)
-        total_minutes = math.floor(self.duration / 60)
-        minutes = total_minutes % 60
-        hours = total_minutes / 60
+        seconds = int(round(self.duration % 60))
+        total_minutes = int(math.floor(self.duration / 60))
+        minutes = int(total_minutes % 60)
+        hours = int(math.floor(total_minutes / 60))
         minutes_str = str(minutes)
         if minutes < 10:
             minutes_str = '0' + minutes_str
@@ -36,12 +36,16 @@ class Podcast(ndb.Model):
 
     def add_to_rss_feed(self):
         contents = Bucket.get_file_contents(config.FEED_PATH)
+        ET.register_namespace('atom', 'http://www.w3.org/2005/Atom')
+        ET.register_namespace(
+            'itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
+        ET.register_namespace('itunesu', 'http://www.itunesu.com/feed')
         tree = ET.fromstring(contents)
         channel = tree.find('channel')
         channel.append(self.convert_to_xml())
         ugly_xml = ET.tostring(tree)
-        print ugly_xml
-        xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ")
+        xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ").encode(
+            'utf-8')
         Bucket.update_file_contents(config.FEED_PATH, xml)
 
     def convert_to_xml(self):
