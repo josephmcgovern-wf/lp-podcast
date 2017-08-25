@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block header_css %}
+    <head>
+        <title>Upload</title>
+        {{ super() }}
+    </head>
+{% endblock header_css %}
+
+{% block body %}
+    <div id='feedback'></div>
+    <audio id='audio' style="display: none"></audio>
+    <div id='page'></div>
+{% endblock body %}
+
+{% block js_bottom %}
+    {{ super() }}
+     <script type='text/babel'>
+        {% include '/js/upload.js' %}
+     </script>
+{% endblock js_bottom %}

@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block header_css %}
+    <head>
+        <title>Home</title>
+        {{ super() }}
+    </head>
+{% endblock header_css %}
+
+{% block body %}
+    <div id='page'></div>
+{% endblock body %}
+
+{% block js_bottom %}
+    {{ super() }}
+     <script type='text/babel'>
+        {% include '/js/index.js' %}
+     </script>
+{% endblock js_bottom %}

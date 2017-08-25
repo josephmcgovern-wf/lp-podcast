@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block header_css %}
+      <link rel="stylesheet" type="text/css" media="screen" href="/static/bootstrap-3.3.6/css/bootstrap.css">
+      <link rel="stylesheet" href="/static/react-select-plus-1.0.0-rc.1/react-select-plus.min.css" />
+      <link rel="stylesheet" type="text/css" media="screen" href="/static/css/global.css">
+      <style type="text/css"> body { padding-top: 60px; padding-bottom: 40px; } </style>
+    {% endblock header_css %}
+
+  </head>
+  <body style="padding: 65px 25px">
+    <!-- Start NavBar -->
+    <div id="page-nav"></div>
+    <!-- End of NavBar -->
+
+    <!-- Start the main page content -->
+    {% block body %}{% endblock body%}
+  </body>
+
+  {% block js_bottom %}{# Placed at the end of the document so the pages load faster #}
+  <script src="/static/jquery-2.2.3.min.js"></script>
+  <script src="/static/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+  <script src="/static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+  <script type="application/javascript" src="/static/datepicker/js/bootstrap-datepicker.min.js"></script>
+  <script src="/static/moment/moment.min.js"></script>
+  <script src="/static/moment-timezone-0.5.4/moment-timezone-with-data-2010-2020.min.js"></script>
+  <script src="/static/babel-6.22.1/babel.min.js"></script>
+  <script src="/static/react-15.3.2/react.min.js"></script>
+  <script src="/static/react-15.3.2/react-with-addons.min.js"></script>
+  <script src="/static/react-15.3.2/react-dom.min.js"></script>
+  <script src="/static/react-select-plus-1.0.0-rc.1/index.min.js"></script>
+  <script src="/static/react-select-plus-1.0.0-rc.1/react-input-autosize.min.js"></script>
+  <script src="/static/react-bootstrap/react-bootstrap.min.js"></script>
+  <script type="text/javascript" src="/static/react-select-plus-1.0.0-rc.1/react-select-plus.min.js"></script>
+  <script type='text/babel'>
+    {% include '/js/layout.js' %}
+  </script>
+  {% endblock js_bottom %}
+</html>
