@@ -7,39 +7,46 @@ audio.addEventListener("canplaythrough", function() {
 })
 
 var UploadPage = React.createClass({
-    getInitialState: function() {
-      return {
-        alertContent: ''
-      }
-    },
-    render: function() {
-      return (
-        <div>
+  getInitialState: function() {
+    return {
+      alertContent: '',
+      alertClass: 'danger'
+    }
+  },
+  render: function() {
+    return (
+      <div>
+        <div style={ {position: 'fixed', zIndex: '100', top: '60px', left: '35%'} }
+             ref="alertContainer">
           {this.getAlert()}
-          <div className="page-header">
-            <h1>Add Podcast Episode</h1>
-          </div>
-          <div>
-            <p className="text-muted">Please fill out the information below</p>
-          </div>
-          <div className="row">
-            <UploadForm onError={this.updateAlert}/>
-          </div>
         </div>
-      )
-    },
+        <div className="page-header" style={ {marginTop: '4em'} }>
+          <h1>Add Podcast Episode</h1>
+        </div>
+        <div>
+          <p className="text-muted">Please fill out the information below</p>
+        </div>
+        <div className="row">
+          <UploadForm updateAlert={this.updateAlert}/>
+        </div>
+      </div>
+    )
+  },
   getAlert: function() {
     if (!this.state.alertContent) {
       return;
     }
     return (
-      <Alert bsStyle='danger' onDismiss={this.handleAlertDismissed}>
+      <Alert bsStyle={this.state.alertClass} onDismiss={this.handleAlertDismissed}>
         {this.state.alertContent}
       </Alert>
     );
   },
-  updateAlert: function(alertContent) {
-    this.setState({alertContent: alertContent});
+  updateAlert: function(alertContent, alertClass) {
+    this.setState({
+      alertContent: alertContent,
+      alertClass: alertClass
+    });
   },
   handleAlertDismissed: function() {
     this.setState({alertContent: ''});
@@ -117,13 +124,11 @@ var UploadForm = React.createClass({
       success: function(jsonifiedData) {
         var data = JSON.parse(jsonifiedData);
         var audioUrl = data.url
-        console.log("Audio url", audioUrl);
         if (callback) {
           callback(audioUrl);
         }
       },
       error: function(data) {
-        console.log("Big error");
         var content = (
           <span>
             <p>
@@ -135,7 +140,7 @@ var UploadForm = React.createClass({
             </p>
           </span>
         );
-        _this.props.onError(content);
+        _this.props.updateAlert(content, 'danger');
         _this.setState({isUploading: false});
       },
     });
@@ -153,10 +158,19 @@ var UploadForm = React.createClass({
       data: JSON.stringify(data),
       contentType: 'application/json',
       success: function(data) {
-        console.log('Success!');
+        var content = (
+          <span>
+            <p>
+              <b>Good news!</b> This podcast episode has been successfully uploaded
+            </p>
+            <p>
+              The new episode should appear in iTunes within 48 hours
+            </p>
+          </span>
+        );
+        _this.props.updateAlert(content, 'success');
       },
       error: function(data) {
-        console.log("Small Error");
         var content = (
           <span>
             <p>
@@ -168,7 +182,7 @@ var UploadForm = React.createClass({
             </p>
           </span>
         );
-        _this.props.onError(content);
+        _this.props.updateAlert(content, 'danger');
       },
       complete: function() {
         _this.setState({isUploading: false});
