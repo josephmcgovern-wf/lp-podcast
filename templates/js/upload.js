@@ -63,6 +63,7 @@ var UploadForm = React.createClass({
         name: null,
         description: null,
         subtitle: null,
+        date: new Date(),
       },
       progress: 0
     };
@@ -269,6 +270,7 @@ var PodcastForm = React.createClass({
         {this.getNameFormGroup()}
         {this.getDescriptionFormGroup()}
         {this.getSubtitleFormGroup()}
+        {this.getDatepicker()}
         {this.getAudioFormGroup()}
         {this.getSubmitButton()}
       </form>
@@ -301,6 +303,22 @@ var PodcastForm = React.createClass({
         <input type="text" className="form-control" placeholder="A subtitle for this episode"
                value={this.props.data.subtitle}
                onChange={(e) => this.props.onUpdate('subtitle', e.target.value)}/>
+      </div>
+    );
+  },
+  getDatepicker: function() {
+    return (
+      <div>
+        <label>Date Episode Recorded <small className="help-text">(Date of Sermon)</small></label>
+        <div className="input-group">
+          <Datetime value={this.props.data.date}
+                    className="test"
+                    onChange={(newDate) => this.props.onUpdate('date', newDate)}
+                    input={true} timeFormat={false}/>
+          <span className="input-group-addon btn btn-default">
+            <span className="glyphicon glyphicon-calendar" />
+          </span>
+        </div>
       </div>
     );
   },
