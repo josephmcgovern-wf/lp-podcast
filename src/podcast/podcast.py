@@ -1,3 +1,4 @@
+from datetime import datetime
 import math
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -11,6 +12,7 @@ from src.settings.env_var import EnvVar
 class Podcast(ndb.Model):
     audio_file_length = ndb.IntegerProperty(required=True)
     audio_file_url = ndb.StringProperty(required=True)
+    date_recorded = ndb.DateProperty(required=True)
     duration = ndb.FloatProperty(required=True)
     description = ndb.TextProperty(required=True)
     name = ndb.StringProperty(required=True)
@@ -33,7 +35,11 @@ class Podcast(ndb.Model):
 
     @property
     def published_date_string(self):
-        return self.time_created.strftime('%a, %d %b %Y %H:%M:%S UTC')
+        year = self.date_recorded.year
+        month = self.date_recorded.month
+        day = self.date_recorded.day
+        date = datetime(year, month, day, 11, 30)
+        return date.strftime('%a, %d %b %Y %H:%M:%S CST')
 
     def add_to_rss_feed(self):
         path = EnvVar.get('feed_path')
@@ -45,7 +51,7 @@ class Podcast(ndb.Model):
         tree = ET.fromstring(contents)
         channel = tree.find('channel')
         channel.append(self.convert_to_xml())
-        ugly_xml = ET.tostring(tree)
+        ugly_xml = ET.tostring(tree).replace('\n', '')
         xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ").encode(
             'utf-8')
         Bucket.update_file_contents(path, xml)

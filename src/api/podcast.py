@@ -1,3 +1,4 @@
+import datetime
 from flask import request
 import json
 import re
@@ -13,6 +14,7 @@ class PodcastAPI(BaseView):
 
     def post(self):
         data = request.get_json()
+        data['date_recorded'] = self._get_date(data.get('date_recorded'))
         p = Podcast(**data)
         try:
             p._check_initialized()
@@ -21,6 +23,18 @@ class PodcastAPI(BaseView):
         p.put()
         p.add_to_rss_feed()
         return 'Success', 200
+
+    def _get_date(self, date_str):
+        if not date_str:
+            return None
+        elements = date_str.split('-')
+        if len(elements) != 3:
+            return None
+        try:
+            year, month, date = elements
+            return datetime.date(int(year), int(month), int(date))
+        except:
+            return None
 
 
 class AudioFileAPI(BaseView):

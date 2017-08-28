@@ -63,7 +63,7 @@ var UploadForm = React.createClass({
         name: null,
         description: null,
         subtitle: null,
-        date: new Date(),
+        date_recorded: moment(),
       },
       progress: 0
     };
@@ -198,6 +198,7 @@ var UploadForm = React.createClass({
     data.audio_file_length = this.state.audioFile.size;
     data.audio_file_url = audioUrl;
     data.duration = DURATION;
+    data.date_recorded = data.date_recorded.format('YYYY-MM-DD');
     $.ajax({
       url: '/api/internal/podcast/',
       method: 'POST',
@@ -308,19 +309,21 @@ var PodcastForm = React.createClass({
   },
   getDatepicker: function() {
     return (
-      <div>
+      <div className="form-group" >
         <label>Date Episode Recorded <small className="help-text">(Date of Sermon)</small></label>
         <div className="input-group">
-          <Datetime value={this.props.data.date}
-                    className="test"
-                    onChange={(newDate) => this.props.onUpdate('date', newDate)}
-                    input={true} timeFormat={false}/>
+          <Datetime value={this.props.data.date_recorded}
+                    onChange={this.updateDate}
+                    timeFormat={false}/>
           <span className="input-group-addon btn btn-default">
             <span className="glyphicon glyphicon-calendar" />
           </span>
         </div>
       </div>
     );
+  },
+  updateDate: function(newDate) {
+    this.props.onUpdate('date_recorded', newDate);
   },
   getAudioFormGroup: function() {
     return (
