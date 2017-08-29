@@ -21,7 +21,7 @@ class Bucket(object):
     def upload_file(cls, file_object):
         bucket = cls._get_bucket()
         name = cls._get_filename(file_object)
-        path = 'podcasts/%s' % name
+        path = 'audio/%s' % name
         bucket.upload_fileobj(file_object, path)
         link = cls._get_filepath(path)
         return link
