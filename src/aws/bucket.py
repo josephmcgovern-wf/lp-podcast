@@ -15,7 +15,7 @@ class Bucket(object):
     @classmethod
     def update_file_contents(cls, path, contents):
         obj = cls._get_file_obj(path)
-        obj.put(Body=contents)
+        obj.put(Body=contents, ACL='public-read')
 
     @classmethod
     def upload_file(cls, file_object):
@@ -23,6 +23,7 @@ class Bucket(object):
         name = cls._get_filename(file_object)
         path = 'audio/%s' % name
         bucket.upload_fileobj(file_object, path)
+        bucket.put_object(ACL='public-read', Key=path)
         link = cls._get_filepath(path)
         return link
 
