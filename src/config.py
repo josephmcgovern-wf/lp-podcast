@@ -1,1 +1,1 @@
-BASE_URL = 'https://s3.amazonaws.com/podcast-testing'
+BASE_URL = 'https://s3.amazonaws.com/lp-podcasts'
