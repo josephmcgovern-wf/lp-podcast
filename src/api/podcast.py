@@ -41,20 +41,30 @@ class AudioFileAPI(BaseView):
 
     def post(self):
         try:
-            f = request.files['audioFile']
-            link = Bucket.upload_file(f)
+            key = self._get_blob_key()
+            blob_info = blobstore.get(key)
+            link = Bucket.upload_file(blob_info)
+            self._delete_blob_key()
             return json.dumps({'url': link})
         except Exception as e:
             return e.message, 500
 
-    def _delete_blob_key(self):
-        pattern = 'blob-key="(.*)";'
-        headers = request.headers['Content-Type']
+    def _get_blob_key(self):
+        pattern = 'blob-key=(.*)$'
+        f = request.files['audioFile']
+        if not f:
+            return None
+        headers = f.headers['Content-Type']
         match = re.search(pattern, headers)
         if not match:
-            return
+            return None
         key = match.group(1)
-        blobstore.delete(key)
+        return key
+
+    def _delete_blob_key(self):
+        key = self._get_blob_key()
+        if key:
+            blobstore.delete(key)
 
 
 def setup_urls(app):

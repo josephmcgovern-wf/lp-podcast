@@ -18,12 +18,16 @@ class Bucket(object):
         obj.put(Body=contents, ACL='public-read')
 
     @classmethod
-    def upload_file(cls, file_object):
+    def upload_file(cls, blob):
         bucket = cls._get_bucket()
-        name = cls._get_filename(file_object)
+        name = secure_filename(blob.filename)
         path = 'audio/%s' % name
-        bucket.upload_fileobj(file_object, path)
-        bucket.put_object(ACL='public-read', Key=path)
+        bucket.put_object(
+            ACL='public-read',
+            Key=path,
+            Body=blob.open().read(),
+            ContentType=blob.content_type,
+        )
         link = cls._get_filepath(path)
         return link
 
@@ -31,10 +35,6 @@ class Bucket(object):
     def _get_filepath(cls, name):
         bucket_name = EnvVar.get('bucket_name')
         return '%s/%s/%s' % (config.BASE_URL, bucket_name, name)
-
-    @classmethod
-    def _get_filename(cls, file_object):
-        return secure_filename(file_object.filename)
 
     @classmethod
     def _get_bucket(cls):
