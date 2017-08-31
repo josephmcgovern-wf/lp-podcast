@@ -162,9 +162,8 @@ var UploadForm = React.createClass({
         _this.setState({progress: 90});
         var data = JSON.parse(jsonifiedData);
         var audioUrl = data.url
-        console.log(audioUrl);
         if (callback) {
-          // callback(audioUrl);
+          callback(audioUrl);
         }
       },
       error: function(data) {
