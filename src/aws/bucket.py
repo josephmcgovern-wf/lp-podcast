@@ -8,6 +8,11 @@ from src.settings.env_var import EnvVar
 class Bucket(object):
 
     @classmethod
+    def delete_file(cls, path):
+        file_obj = cls._get_file_obj(path)
+        file_obj.delete()
+
+    @classmethod
     def get_file_contents(cls, path):
         obj = cls._get_file_obj(path)
         return obj.get()['Body'].read()

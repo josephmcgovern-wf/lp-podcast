@@ -314,6 +314,7 @@ var PodcastForm = React.createClass({
         <div className="input-group">
           <Datetime value={this.props.data.date_recorded}
                     onChange={this.updateDate}
+                    dateFormat='YYYY-MM-DD'
                     timeFormat={false}/>
           <span className="input-group-addon btn btn-default">
             <span className="glyphicon glyphicon-calendar" />

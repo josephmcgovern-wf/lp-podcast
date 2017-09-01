@@ -17,6 +17,24 @@ class PodcastAPI(BaseView):
         podcasts = [p.serialize() for p in podcasts]
         return json.dumps({'podcasts': podcasts}), 200
 
+    def delete(self, podcast_id):
+        podcast = Podcast.get_by_id(podcast_id)
+        if not podcast:
+            return 'Not Found', 404
+        podcast.delete()
+        return 'Success', 202
+
+    def put(self, podcast_id):
+        podcast = Podcast.get_by_id(podcast_id)
+        if not podcast:
+            return 'Not Found', 404
+        data = request.get_json()
+        podcast_data = data.get('podcast_data')
+        if not podcast_data:
+            return 'podcast_data required', 400
+        podcast.edit(**podcast_data)
+        return json.dumps({'podcast': podcast.serialize()}), 200
+
     def post(self):
         data = request.get_json()
         data['date_recorded'] = self._get_date(data.get('date_recorded'))
@@ -75,8 +93,12 @@ class AudioFileAPI(BaseView):
 def setup_urls(app):
     app.add_url_rule(
         '/api/internal/podcast/',
-        methods=['GET', 'POST'],
+        methods=['GET', 'POST', 'PUT'],
         view_func=PodcastAPI.as_view('internal.podcast'))
+    app.add_url_rule(
+        '/api/internal/podcast/<int:podcast_id>/',
+        methods=['DELETE', 'PUT'],
+        view_func=PodcastAPI.as_view('internal.podcast.specific'))
     app.add_url_rule(
         '/api/internal/podcast/upload/',
         methods=['POST'],

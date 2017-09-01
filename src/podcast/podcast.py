@@ -41,13 +41,37 @@ class Podcast(ndb.Model):
         date = datetime(year, month, day, 11, 30)
         return date.strftime('%a, %d %b %Y %H:%M:%S CST')
 
-    def add_to_rss_feed(self):
+    @classmethod
+    def sync_feed_with_datastore(cls, ignore=[]):
         path = EnvVar.get('feed_path')
         contents = Bucket.get_file_contents(path)
+        cls._prep_element_tree()
+        tree = ET.fromstring(contents)
+        channel = tree.find('channel')
+        existing_podcasts = channel.findall('item')
+        for existing_podcast in existing_podcasts:
+            channel.remove(existing_podcast)
+        podcasts = Podcast.query().fetch()
+        for podcast in podcasts:
+            if podcast in ignore:
+                continue
+            channel.append(podcast.convert_to_xml())
+        ugly_xml = ET.tostring(tree).replace('\n', '')
+        xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ").encode(
+            'utf-8')
+        Bucket.update_file_contents(path, xml)
+
+    @classmethod
+    def _prep_element_tree(cls):
         ET.register_namespace('atom', 'http://www.w3.org/2005/Atom')
         ET.register_namespace(
             'itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
         ET.register_namespace('itunesu', 'http://www.itunesu.com/feed')
+
+    def add_to_rss_feed(self):
+        path = EnvVar.get('feed_path')
+        contents = Bucket.get_file_contents(path)
+        self._prep_element_tree()
         tree = ET.fromstring(contents)
         channel = tree.find('channel')
         channel.append(self.convert_to_xml())
@@ -70,6 +94,25 @@ class Podcast(ndb.Model):
         ET.SubElement(root, 'itunes:duration').text = self.duration_string
         ET.SubElement(root, 'pubDate').text = self.published_date_string
         return root
+
+    def edit(self, **kwargs):
+        for k, v in kwargs:
+            if hasattr(self, k):
+                setattr(self, k, v)
+        self.put()
+        self.sync_feed_with_datastore()
+
+    def delete(self):
+        self.sync_feed_with_datastore(ignore=[self])
+        audio_file_path = self._get_audio_file_path()
+        Bucket.delete_file(audio_file_path)
+        self.key.delete()
+
+    def _get_audio_file_path(self):
+        bucket_name = EnvVar.get('bucket_name')
+        formatted_bucket_name = '/%s/' % bucket_name
+        parts = self.audio_file_url.split(formatted_bucket_name)
+        return parts[-1]
 
     def serialize(self):
         data = self._to_dict()
