@@ -70,3 +70,12 @@ class Podcast(ndb.Model):
         ET.SubElement(root, 'itunes:duration').text = self.duration_string
         ET.SubElement(root, 'pubDate').text = self.published_date_string
         return root
+
+    def serialize(self):
+        data = self._to_dict()
+        data['id'] = self.key.id()
+        if self.time_created:
+            data['time_created'] = self.time_created.isoformat()
+        if self.date_recorded:
+            data['date_recorded'] = self.date_recorded.isoformat()
+        return data

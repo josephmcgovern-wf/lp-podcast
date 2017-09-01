@@ -12,6 +12,11 @@ from src.views.base_view import BaseView
 
 class PodcastAPI(BaseView):
 
+    def get(self):
+        podcasts = Podcast.query().order(-Podcast.date_recorded).fetch()
+        podcasts = [p.serialize() for p in podcasts]
+        return json.dumps({'podcasts': podcasts}), 200
+
     def post(self):
         data = request.get_json()
         data['date_recorded'] = self._get_date(data.get('date_recorded'))
@@ -70,7 +75,7 @@ class AudioFileAPI(BaseView):
 def setup_urls(app):
     app.add_url_rule(
         '/api/internal/podcast/',
-        methods=['POST'],
+        methods=['GET', 'POST'],
         view_func=PodcastAPI.as_view('internal.podcast'))
     app.add_url_rule(
         '/api/internal/podcast/upload/',
