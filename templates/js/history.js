@@ -172,7 +172,7 @@ var EditModal = React.createClass({
           <label>Description</label>
           <textarea className="form-control" placeholder="A long description of the episode"
                     value={this.state.description}
-                    style={ {resize: 'y'} }
+                    style={ {resize: 'vertical'} }
                     onChange={(e) => this.setState({'description': e.target.value})}/>
         </div>
         <div className="form-group">
