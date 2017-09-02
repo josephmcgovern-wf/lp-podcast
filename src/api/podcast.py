@@ -32,8 +32,15 @@ class PodcastAPI(BaseView):
         podcast_data = data.get('podcast_data')
         if not podcast_data:
             return 'podcast_data required', 400
+        podcast_data = self._cleanup_data(podcast_data)
         podcast.edit(**podcast_data)
         return json.dumps({'podcast': podcast.serialize()}), 200
+
+    def _cleanup_data(self, data):
+        if data.get('date_recorded'):
+            data['date_recorded'] = datetime.datetime.strptime(
+                data['date_recorded'], '%Y-%m-%d').date()
+        return data
 
     def post(self):
         data = request.get_json()

@@ -202,8 +202,12 @@ var EditModal = React.createClass({
   submit: function() {
     var _this = this;
     this.setState({isLoading: true});
-    // TODO Populate data
-    var data = {};
+    var data = {
+      name: this.state.name,
+      description: this.state.description,
+      subtitle: this.state.subtitle,
+      date_recorded: this.state.dateRecorded
+    };
     $.ajax({
       url: '/api/internal/podcast/' + _this.props.podcast.id + '/',
       method: 'PUT',

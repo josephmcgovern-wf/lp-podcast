@@ -96,7 +96,7 @@ class Podcast(ndb.Model):
         return root
 
     def edit(self, **kwargs):
-        for k, v in kwargs:
+        for k, v in kwargs.iteritems():
             if hasattr(self, k):
                 setattr(self, k, v)
         self.put()
