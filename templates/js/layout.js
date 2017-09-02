@@ -1,5 +1,6 @@
 var NAME_TO_PATH_MAP = {
-  'Upload': '/upload/'
+  'Upload': '/upload/',
+  'History': '/history/'
 };
 
 var Navbar = React.createClass({
