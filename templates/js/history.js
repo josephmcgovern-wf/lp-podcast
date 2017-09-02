@@ -1,6 +1,7 @@
 var DropdownButton = ReactBootstrap.DropdownButton;
 var MenuItem = ReactBootstrap.MenuItem;
 var Modal = ReactBootstrap.Modal;
+var Alert = ReactBootstrap.Alert;
 
 var HistoryPage = React.createClass({
   getInitialState: function() {
@@ -137,7 +138,8 @@ var EditModal = React.createClass({
       description: this.props.podcast.description,
       subtitle: this.props.podcast.subtitle,
       dateRecorded: this.props.podcast.date_recorded,
-      isLoading: false
+      isLoading: false,
+      feedback: null,
     };
   },
   render: function() {
@@ -147,6 +149,7 @@ var EditModal = React.createClass({
           <Modal.Title>Edit Podcast Episode</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <div>{this.state.feedback}</div>
           {this.getFormContent()}
         </Modal.Body>
         <Modal.Footer>
@@ -201,7 +204,7 @@ var EditModal = React.createClass({
   },
   submit: function() {
     var _this = this;
-    this.setState({isLoading: true});
+    this.setState({isLoading: true, feedback: null});
     var data = {
       name: this.state.name,
       description: this.state.description,
@@ -214,13 +217,23 @@ var EditModal = React.createClass({
       data: JSON.stringify({podcast_data: data}),
       contentType: 'application/json',
       success: function() {
-        console.log('success');
         _this.props.onUpdate();
         _this.close();
       },
-      error: function() {
-        // TODO Display error
-        console.log('error');
+      error: function(data) {
+        var feedback = (
+          <Alert bsStyle="danger" onDismiss={() => _this.setState({feedback: null})}>
+            <div>
+              <strong>Uh-oh!</strong> This episode could not be edited.
+            </div>
+            <div>
+              Error: {data.responseText}
+            </div>
+          </Alert>
+        );
+        _this.setState({
+          feedback: feedback
+        });
       },
       complete: function() {
         _this.setState({isLoading: false});
@@ -232,7 +245,8 @@ var EditModal = React.createClass({
 var DeleteModal = React.createClass({
   getInitialState: function() {
     return {
-      isLoading: false
+      isLoading: false,
+      feedback: null
     }
   },
   render: function() {
@@ -242,6 +256,7 @@ var DeleteModal = React.createClass({
           <Modal.Title>Delete Podcast Episode</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <div>{this.state.feedback}</div>
           <p>
             Are you sure you want to delete this podcast episode? <strong>This action cannot be undone.</strong>
           </p>
@@ -261,18 +276,28 @@ var DeleteModal = React.createClass({
   },
   deletePodcast: function() {
     var _this = this;
-    this.setState({isLoading: true});
+    this.setState({isLoading: true, feedback: null});
     $.ajax({
       url: '/api/internal/podcast/' + _this.props.podcast.id + '/',
       method: 'DELETE',
       success: function() {
-        console.log('success');
         _this.props.onDelete();
         _this.close();
       },
-      error: function() {
-        // TODO Display error
-        console.log('error');
+      error: function(data) {
+        var feedback = (
+          <Alert bsStyle="danger" onDismiss={() => _this.setState({feedback: null})}>
+            <div>
+              <strong>Uh-oh!</strong> This episode could not be deleted.
+            </div>
+            <div>
+              Error: {data.responseText}
+            </div>
+          </Alert>
+        );
+        _this.setState({
+          feedback: feedback
+        });
       },
       complete: function() {
         _this.setState({isLoading: false});
