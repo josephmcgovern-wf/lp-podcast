@@ -32,7 +32,7 @@ class Bucket(object):
     @classmethod
     def delete_file(cls, path):
         path = cls._get_path_in_bucket(path)
-        gcs.delete_file(path)
+        gcs.delete(path)
 
     @classmethod
     def _get_public_link_for_path(cls, path):
