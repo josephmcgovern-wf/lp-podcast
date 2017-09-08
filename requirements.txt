@@ -1,5 +1,5 @@
-boto3==1.4.4
 flask==0.10.1
+GoogleAppEngineCloudStorageClient==1.9.22.1
 Jinja2==2.8
 requests==2.3
 setuptools==21.1

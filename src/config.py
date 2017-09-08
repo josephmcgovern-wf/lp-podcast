@@ -1,1 +1,2 @@
-BASE_URL = 'https://s3.amazonaws.com/'
+BASE_BUCKET_URL = 'https://storage.googleapis.com'
+FEED_PATH = 'rss/feed.xml'

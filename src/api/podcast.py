@@ -3,9 +3,7 @@ from flask import request
 import json
 import re
 
-from google.appengine.ext import blobstore
-
-from src.aws.bucket import Bucket
+from src.gcs.bucket import Bucket
 from src.podcast.podcast import Podcast
 from src.views.base_view import BaseView
 
@@ -72,9 +70,7 @@ class AudioFileAPI(BaseView):
     def post(self):
         try:
             key = self._get_blob_key()
-            blob_info = blobstore.get(key)
-            link = Bucket.upload_file(blob_info)
-            self._delete_blob_key()
+            link = Bucket.create_audio_file_from_blob_key(key)
             return json.dumps({'url': link})
         except Exception as e:
             return e.message, 500
@@ -90,11 +86,6 @@ class AudioFileAPI(BaseView):
             return None
         key = match.group(1)
         return key
-
-    def _delete_blob_key(self):
-        key = self._get_blob_key()
-        if key:
-            blobstore.delete(key)
 
 
 def setup_urls(app):

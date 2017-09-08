@@ -5,7 +5,8 @@ from xml.dom import minidom
 
 from google.appengine.ext import ndb
 
-from src.aws.bucket import Bucket
+from src import config
+from src.gcs.bucket import Bucket
 from src.settings.env_var import EnvVar
 
 
@@ -43,7 +44,7 @@ class Podcast(ndb.Model):
 
     @classmethod
     def sync_feed_with_datastore(cls, ignore=[]):
-        path = EnvVar.get('feed_path')
+        path = config.FEED_PATH
         contents = Bucket.get_file_contents(path)
         cls._prep_element_tree()
         tree = ET.fromstring(contents)
@@ -69,7 +70,7 @@ class Podcast(ndb.Model):
         ET.register_namespace('itunesu', 'http://www.itunesu.com/feed')
 
     def add_to_rss_feed(self):
-        path = EnvVar.get('feed_path')
+        path = config.FEED_PATH
         contents = Bucket.get_file_contents(path)
         self._prep_element_tree()
         tree = ET.fromstring(contents)
