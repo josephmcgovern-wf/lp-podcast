@@ -1,5 +1,5 @@
 import cloudstorage as gcs
-from werkzeug.utils import secure_filename
+import uuid
 from src import config
 from src.settings.env_var import EnvVar
 from google.appengine.ext import blobstore
@@ -12,20 +12,13 @@ class Bucket(object):
         blob_info = blobstore.get(blob_key)
         source = blob_info.gs_object_name
         bucket_name = EnvVar.get('bucket_name')
-        filename = secure_filename(blob_info.filename)
-        destination = '/%s/audio/%s' % (bucket_name, filename)
-        """
-        f = gcs.open(
-            destination, 'w', content_type='audio/mp3',
-            options={'x-goog-acl': 'public-read'})
-        f.write(blob_info.open().read())
-        f.close()
-        """
+        destination = '/{}/audio/{}.mp3'.format(bucket_name, str(uuid.uuid4()))
         gcs.copy2(
             source, destination, metadata={
                 'x-goog-acl': 'public-read',
                 'content-type': 'audio/mp3',
-                'content_type': 'audio/mp3'})
+                'content_type': 'audio/mp3'
+            })
         blobstore.delete(blob_key)
         return cls._get_public_link_for_path(destination)
 
