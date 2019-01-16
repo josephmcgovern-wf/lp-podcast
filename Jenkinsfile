@@ -14,8 +14,12 @@ ls'''
         stage('Parallel commands') {
           steps {
             echo 'hello'
-            sleep(time: 5, unit: 'HOURS')
             echo 'I am all done'
+            waitUntil() {
+              sleep 10
+              input 'Feel free to override'
+            }
+
           }
         }
       }
