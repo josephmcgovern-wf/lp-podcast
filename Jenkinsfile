@@ -20,7 +20,7 @@ ls'''
         }
       }
     }
-    stage('') {
+    stage('Wrap-up') {
       steps {
         echo 'Everything is complete!'
       }
