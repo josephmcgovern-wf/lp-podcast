@@ -20,5 +20,10 @@ ls'''
         }
       }
     }
+    stage('') {
+      steps {
+        echo 'Everything is complete!'
+      }
+    }
   }
 }
