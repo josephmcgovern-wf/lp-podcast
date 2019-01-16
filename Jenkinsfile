@@ -14,7 +14,7 @@ ls'''
         stage('Parallel commands') {
           steps {
             echo 'hello'
-            sleep 5
+            sleep(time: 5, unit: 'HOURS')
             echo 'I am all done'
           }
         }
