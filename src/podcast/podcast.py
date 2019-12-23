@@ -11,6 +11,11 @@ from src.settings.env_var import EnvVar
 
 
 class Podcast(ndb.Model):
+    NAMESPACES = {
+        'atom': 'http://www.w3.org/2005/Atom',
+        'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
+        'itunesu': 'http://www.itunesu.com/feed',
+    }
     audio_file_length = ndb.IntegerProperty(required=True)
     audio_file_url = ndb.StringProperty(required=True)
     date_recorded = ndb.DateProperty(required=True)
@@ -43,11 +48,45 @@ class Podcast(ndb.Model):
         return date.strftime('%a, %d %b %Y %H:%M:%S CST')
 
     @classmethod
-    def sync_feed_with_datastore(cls, ignore=[]):
-        path = config.FEED_PATH
-        contents = Bucket.get_file_contents(path)
-        cls._prep_element_tree()
+    def fetch_all(cls):
+        tree = cls._xml_tree()
+        channel = tree.find('channel')
+        return [
+            cls._convert_element_to_dict(i) for i in
+            channel.findall('item')
+        ]
+
+    @classmethod
+    def _convert_element_to_dict(cls, element):
+        def getvalue(element, value, namespaces=None):
+            namespaces = namespaces or {}
+            return element.find(value, namespaces).text
+
+        date_pattern = '%a, %d %b %Y %H:%M:%S CST'
+        audio_file_info = element.find('enclosure').attrib
+        return {
+            'name': getvalue(element, 'title'),
+            'description': getvalue(element, 'description'),
+            'subtitle': getvalue(element, 'itunes:subtitle', namespaces=cls.NAMESPACES),
+            'audio_file_url': audio_file_info['url'],
+            'audio_file_length': audio_file_info['length'],
+            'id': audio_file_info['url'],
+            'date_recorded': datetime.strptime(getvalue(element, 'pubDate'), date_pattern).isoformat()
+        }
+
+    @classmethod
+    def _xml_tree(cls):
+        contents = Bucket.get_file_contents(config.FEED_PATH)
+        ET.register_namespace('atom', 'http://www.w3.org/2005/Atom')
+        ET.register_namespace(
+            'itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
+        ET.register_namespace('itunesu', 'http://www.itunesu.com/feed')
         tree = ET.fromstring(contents)
+        return tree
+
+    @classmethod
+    def sync_feed_with_datastore(cls, ignore=[]):
+        tree = cls._xml_tree()
         channel = tree.find('channel')
         existing_podcasts = channel.findall('item')
         for existing_podcast in existing_podcasts:
@@ -62,18 +101,8 @@ class Podcast(ndb.Model):
             'utf-8')
         Bucket.update_file_contents(path, xml)
 
-    @classmethod
-    def _prep_element_tree(cls):
-        ET.register_namespace('atom', 'http://www.w3.org/2005/Atom')
-        ET.register_namespace(
-            'itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
-        ET.register_namespace('itunesu', 'http://www.itunesu.com/feed')
-
     def add_to_rss_feed(self):
-        path = config.FEED_PATH
-        contents = Bucket.get_file_contents(path)
-        self._prep_element_tree()
-        tree = ET.fromstring(contents)
+        tree = cls._xml_tree()
         channel = tree.find('channel')
         channel.append(self.convert_to_xml())
         ugly_xml = ET.tostring(tree).replace('\n', '')

@@ -11,8 +11,7 @@ from src.views.base_view import BaseView
 class PodcastAPI(BaseView):
 
     def get(self):
-        podcasts = Podcast.query().order(-Podcast.date_recorded).fetch()
-        podcasts = [p.serialize() for p in podcasts]
+        podcasts = sorted(Podcast.fetch_all(), key=lambda x: x['date_recorded'], reverse=True)
         return json.dumps({'podcasts': podcasts}), 200
 
     def delete(self, podcast_id):
