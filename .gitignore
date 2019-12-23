@@ -1,5 +1,4 @@
 *.py[cod]
-settingslocal.py
 src/static/docs
 
 # Packages
@@ -57,5 +56,4 @@ coverage.xml
 # npm ignores
 node_modules
 
-# support scripts bigsky credentials
-/src/auth/bigsky_keys/*
+tags
