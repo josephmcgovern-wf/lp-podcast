@@ -60,6 +60,7 @@ class Podcast(ndb.Model):
 
     @classmethod
     def _write_tree(cls, tree):
+        logging.debug("Updating feed...")
         ugly_xml = ET.tostring(tree).replace('\n', '')
         xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ").encode(
             'utf-8')
@@ -108,6 +109,7 @@ class Podcast(ndb.Model):
             if item.find('guid').text == episode_id:
                 audio_file_url = item.find('enclosure').attrib['url']
                 channel.remove(item)
+                logging.debug("Found episode and removed it from tree!")
                 break
         else:
             raise Exception('No episode found with id {}'.format(episode_id))
@@ -116,7 +118,7 @@ class Podcast(ndb.Model):
         logging.debug("Deleting audio file...")
         # Delete audio file from bucket
         bucket_name = EnvVar.get('bucket_name')
-        formatted_bucket_name = '/%s/'.format(bucket_name)
+        formatted_bucket_name = '/{}/'.format(bucket_name)
         parts = audio_file_url.split(formatted_bucket_name)
         audio_filepath = parts[-1]
         Bucket.delete_file(audio_filepath)

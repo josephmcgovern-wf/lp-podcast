@@ -279,7 +279,7 @@ var DeleteModal = React.createClass({
     var _this = this;
     this.setState({isLoading: true, feedback: null});
     $.ajax({
-      url: '/api/internal/podcast/' + _this.props.podcast.id + '/',
+      url: '/api/internal/podcast/',
       method: 'DELETE',
       contentType: 'application/json',
       data: JSON.stringify({episode_id: _this.props.podcast.id}),

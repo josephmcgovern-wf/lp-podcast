@@ -90,9 +90,6 @@ def setup_urls(app):
         '/api/internal/podcast/',
         view_func=PodcastAPI.as_view('internal.podcast'))
     app.add_url_rule(
-        '/api/internal/podcast/<int:podcast_id>/',
-        view_func=PodcastAPI.as_view('internal.podcast.specific'))
-    app.add_url_rule(
         '/api/internal/podcast/upload/',
         methods=['POST'],
         view_func=AudioFileAPI.as_view('internal.podcast.audio'))
