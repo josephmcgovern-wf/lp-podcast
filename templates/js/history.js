@@ -209,10 +209,11 @@ var EditModal = React.createClass({
       name: this.state.name,
       description: this.state.description,
       subtitle: this.state.subtitle,
-      date_recorded: this.state.dateRecorded
+      date_recorded: this.state.dateRecorded,
+      id: this.props.podcast.id,
     };
     $.ajax({
-      url: '/api/internal/podcast/' + _this.props.podcast.id + '/',
+      url: '/api/internal/podcast/',
       method: 'PUT',
       data: JSON.stringify({podcast_data: data}),
       contentType: 'application/json',
@@ -280,6 +281,8 @@ var DeleteModal = React.createClass({
     $.ajax({
       url: '/api/internal/podcast/' + _this.props.podcast.id + '/',
       method: 'DELETE',
+      contentType: 'application/json',
+      data: JSON.stringify({episode_id: _this.props.podcast.id}),
       success: function() {
         _this.props.onDelete();
         _this.close();
