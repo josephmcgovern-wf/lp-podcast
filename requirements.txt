@@ -1,4 +1,6 @@
 flask==1.1.1
-GoogleAppEngineCloudStorageClient==1.9.22.1
+google-cloud-storage==1.24.1
+google-cloud-ndb==0.2.1
+googleapis-common-protos
 # marshmallow==3.3.0
 setuptools==44.0.0

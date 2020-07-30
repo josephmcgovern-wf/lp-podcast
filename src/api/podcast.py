@@ -2,6 +2,8 @@ import datetime
 from flask import request
 import json
 import re
+import uuid
+import urllib
 
 from src.gcs.bucket import Bucket
 from src.podcast.podcast import Podcast
@@ -44,6 +46,11 @@ class PodcastAPI(BaseView):
         data = request.get_json()
         data['date_recorded'] = self._get_date(data.get('date_recorded'))
         try:
+            if not data.get('audio_filename'):
+                raise Exception('Expected audio filename')
+            filename = data.pop('audio_filename')
+            new_blob = Bucket.transfer_audio_file_to_appropriate_location(filename)
+            data['audio_file_url'] = new_blob.public_url
             Podcast.add_episode(data)
         except Exception as e:
             return e.message, 400
@@ -62,27 +69,13 @@ class PodcastAPI(BaseView):
             return None
 
 
-class AudioFileAPI(BaseView):
+class GetSignedUploadUrl(BaseView):
 
-    def post(self):
-        try:
-            key = self._get_blob_key()
-            link = Bucket.create_audio_file_from_blob_key(key)
-            return json.dumps({'url': link})
-        except Exception as e:
-            return e.message, 500
-
-    def _get_blob_key(self):
-        pattern = 'blob-key=(.*)$'
-        f = request.files['audioFile']
-        if not f:
-            return None
-        headers = f.headers['Content-Type']
-        match = re.search(pattern, headers)
-        if not match:
-            return None
-        key = match.group(1)
-        return key
+    def get(self):
+        filename = urllib.unquote_plus(request.args.get('filename', str(uuid.uuid4())))
+        content_type = request.args.get('content_type', '')
+        url = Bucket.generate_new_audio_upload_url(filename, content_type=content_type)
+        return json.dumps({'url': url})
 
 
 def setup_urls(app):
@@ -90,6 +83,6 @@ def setup_urls(app):
         '/api/internal/podcast/',
         view_func=PodcastAPI.as_view('internal.podcast'))
     app.add_url_rule(
-        '/api/internal/podcast/upload/',
-        methods=['POST'],
-        view_func=AudioFileAPI.as_view('internal.podcast.audio'))
+        '/api/internal/podcast/generate_upload_url/',
+        view_func=GetSignedUploadUrl.as_view('internal.podcast.generate_upload_url'))
+

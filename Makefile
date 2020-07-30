@@ -1,6 +1,6 @@
 .PHONY: app-deps
 app-deps:
-	pip install -r requirements.txt -t src/lib
+	pip install -Ur requirements.txt -t src/lib
 
 .PHONY: deps
 deps:

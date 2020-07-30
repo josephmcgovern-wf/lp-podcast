@@ -1,31 +1,21 @@
 import logging
 import math
+import urllib
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from xml.dom import minidom
 
-from google.appengine.ext import ndb
-
 from src import config
 from src.gcs.bucket import Bucket
-from src.settings.env_var import EnvVar
 
 
-class Podcast(ndb.Model):
+class Podcast(object):
     NAMESPACES = {
         'atom': 'http://www.w3.org/2005/Atom',
         'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
         'itunesu': 'http://www.itunesu.com/feed',
     }
     PUBLISHED_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S CST'
-    audio_file_length = ndb.IntegerProperty(required=True)
-    audio_file_url = ndb.StringProperty(required=True)
-    date_recorded = ndb.DateProperty(required=True)
-    duration = ndb.FloatProperty(required=True)
-    description = ndb.TextProperty(required=True)
-    name = ndb.StringProperty(required=True)
-    subtitle = ndb.StringProperty(required=True)
-    time_created = ndb.DateTimeProperty(auto_now_add=True)
 
     @property
     def duration_string(self):
@@ -64,7 +54,7 @@ class Podcast(ndb.Model):
         ugly_xml = ET.tostring(tree).replace('\n', '')
         xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ").encode(
             'utf-8')
-        Bucket.update_file_contents(config.FEED_PATH, xml)
+        Bucket.update_file_contents(config.FEED_PATH, xml, content_type="text/xml")
 
     @classmethod
     def add_episode(cls, episode_data):
@@ -117,11 +107,10 @@ class Podcast(ndb.Model):
 
         logging.debug("Deleting audio file...")
         # Delete audio file from bucket
-        bucket_name = EnvVar.get('bucket_name')
-        formatted_bucket_name = '/{}/'.format(bucket_name)
+        formatted_bucket_name = '/{}/'.format(config.BUCKET_NAME)
         parts = audio_file_url.split(formatted_bucket_name)
         audio_filepath = parts[-1]
-        Bucket.delete_file(audio_filepath)
+        Bucket.delete_file(urllib.unquote_plus(audio_filepath))
 
     @classmethod
     def _convert_element_to_dict(cls, element):
@@ -188,3 +177,4 @@ class Podcast(ndb.Model):
         ET.register_namespace('itunesu', 'http://www.itunesu.com/feed')
         tree = ET.fromstring(contents)
         return tree
+

@@ -112,8 +112,7 @@ var UploadForm = React.createClass({
       return;
     }
     this.setState({isUploading: true});
-    this.sendAudioFileRequest(
-      this.sendPodcastRequest);
+    this.uploadAudioFile(this.sendPodcastRequest);
   },
   failValidation: function(missingFields) {
     var content = (
@@ -139,49 +138,57 @@ var UploadForm = React.createClass({
     }
     return null;
   },
-  sendAudioFileRequest: function(callback) {
+  uploadAudioFile: function(callback) {
     var _this = this;
     var el = document.getElementById('audio-form');
-    var data = new FormData(el);
-    data.append('audioFile', this.state.audioFile);
-    $.ajax({
-      url: '{{upload_url}}',
-      method: 'POST',
-      data: data,
-      processData: false,
-      contentType: false,
-      cache: false,
-      xhr: function() {
-        var myXhr = $.ajaxSettings.xhr();
-        if(myXhr.upload){
-          myXhr.upload.addEventListener('progress', _this.updateProgressFromFileUpload, false);
-        }
-        return myXhr;
-      },
-      success: function(jsonifiedData) {
-        _this.setState({progress: 90});
-        var data = JSON.parse(jsonifiedData);
-        var audioUrl = data.url
-        if (callback) {
-          callback(audioUrl);
-        }
-      },
-      error: function(data) {
-        var content = (
-          <span>
-            <p>
-              <b>Uh-oh!</b> There was a problem creating this podcast.
-              Please see the error below:
-            </p>
-            <p>
-              {data.responseText}
-            </p>
-          </span>
-        );
-        _this.props.updateAlert(content, 'danger');
-        _this.setState({isUploading: false});
-      },
-    });
+    var form_data = new FormData(el);
+    form_data.append('audioFile', this.state.audioFile);
+    var file = this.state.audioFile;
+    var _this = this;
+    $.getJSON(
+      '/api/internal/podcast/generate_upload_url/', {
+        filename: encodeURIComponent(file.name),
+        content_type: file.type
+      }, function(json) {
+        $.ajax({
+          url: json.url,
+          method: 'PUT',
+          data: form_data,
+          contentType: file.type,
+          processData: false,
+          cache: false,
+          crossDomain: true,
+          xhr: function() {
+            var myXhr = $.ajaxSettings.xhr();
+            if(myXhr.upload){
+              myXhr.upload.addEventListener('progress', _this.updateProgressFromFileUpload, false);
+            }
+            return myXhr;
+          },
+          success: function() {
+            _this.setState({progress: 90});
+            if (callback) {
+              callback();
+            }
+          },
+          error: function(data) {
+            var content = (
+              <span>
+                <p>
+                  <b>Uh-oh!</b> There was a problem creating this podcast.
+                  Please see the error below:
+                </p>
+                <p>
+                  {data.responseText}
+                </p>
+              </span>
+            );
+            _this.props.updateAlert(content, 'danger');
+            _this.setState({isUploading: false});
+          },
+        });
+      }
+    );
   },
   updateProgressFromFileUpload: function(e) {
     if (e.lengthComputable) {
@@ -191,14 +198,13 @@ var UploadForm = React.createClass({
       this.setState({progress: percentage * 0.8});
     }
   },
-  sendPodcastRequest: function(audioUrl) {
+  sendPodcastRequest: function() {
     var _this = this;
     var data = this.state.formData;
-    var file = document.getElementById('file-upload');
     data.audio_file_length = this.state.audioFile.size;
-    data.audio_file_url = audioUrl;
     data.duration = DURATION;
     data.date_recorded = data.date_recorded.format('YYYY-MM-DD');
+    data.audio_filename = this.state.audioFile.name;
     $.ajax({
       url: '/api/internal/podcast/',
       method: 'POST',
@@ -330,8 +336,7 @@ var PodcastForm = React.createClass({
     return (
       <div className="form-group">
         <label>Audio file</label>
-        <form id="audio-form" enctype="mutlipart/form-data" action="{{upload_url}}"
-              method="POST">
+        <form id="audio-form" enctype="mutlipart/form-data" method="POST">
          <input id='file-upload' type="file" accept="audio/*"
                 onChange={this.handleAudioFileChange}
                 ref={'fileUpload'} />

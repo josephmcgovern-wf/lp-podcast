@@ -32,6 +32,8 @@ handlers:
 libraries:
   - name: ssl
     version: latest
+  - name: grpcio
+    version: 1.0.0
 
 skip_files:
   - ^(.*/)?#.*#$
@@ -42,3 +44,5 @@ skip_files:
   - (.*/test/.*)
   - (.*/test/.*)
   - (venv/.*)
+  - ^tags$
+

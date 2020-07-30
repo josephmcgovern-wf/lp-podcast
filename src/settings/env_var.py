@@ -1,4 +1,4 @@
-from google.appengine.ext import ndb
+from google.cloud import ndb
 
 
 class EnvVar(ndb.Model):
@@ -9,8 +9,9 @@ class EnvVar(ndb.Model):
     def add(cls, name, value):
         if cls._get_object(name):
             raise Exception('Already exists')
-        obj = cls(name=name, value=value)
-        obj.put()
+        with cls._ndb_client().context():
+            obj = cls(name=name, value=value)
+            obj.put()
 
     @classmethod
     def get(cls, name):
@@ -24,16 +25,24 @@ class EnvVar(ndb.Model):
         obj = cls._get_object(name)
         if not obj:
             raise Exception('Not found')
-        obj.value = value
-        obj.put()
+        with cls._ndb_client().context():
+            obj.value = value
+            obj.put()
 
     @classmethod
     def delete(cls, name):
         obj = cls._get_object(name)
         if not obj:
             raise Exception('Not found')
-        obj.key.delete()
+        with cls._ndb_client().context():
+            obj.key.delete()
 
     @classmethod
     def _get_object(cls, name):
-        return cls.query(cls.name == name).get()
+        with cls._ndb_client().context():
+            return cls.query(cls.name == name).get()
+
+    @staticmethod
+    def _ndb_client():
+        return ndb.Client()
+
