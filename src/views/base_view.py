@@ -1,4 +1,4 @@
-from src.auth.decorators import login_required
+from flask_login import login_required
 
 from flask.views import MethodView
 
