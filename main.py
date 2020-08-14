@@ -40,7 +40,7 @@ requests.packages.urllib3.disable_warnings(
 # Flask app setup
 app = Flask(__name__)
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
+app.secret_key = EnvVar.get("FLASK_SECRET_KEY") or os.urandom(24)
 
 # User session management setup
 # https://flask-login.readthedocs.io/en/latest

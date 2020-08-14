@@ -5,8 +5,15 @@ for uploading, modifying, and deleting podcast episodes. Some manual configurati
 is involved for setting up a new podcast, such as registering it with iTunes and
 doing a one-time configuration of an `rss.xml` file.
 
+TODO: Add an example rrs.xml file to this repo
+
 ### How it works
-TODO
+
+This app runs an on-demand instance whenever someone accesses the application.
+It is a simple web UI for uploading some basic metadata about an episode (
+name, description, date, etc) along with the audio file necessary. The audio
+file gets uploaded to a folder in the podcast bucket and the rss feed xml file
+gets updated with the episode content, pointing to the new audio file.
 
 ### Deploying a new podcast appspot
 
@@ -16,7 +23,7 @@ To deploy a new podcast you must:
 2. Deploy this codebase to that new project
 3. Create a new GCS bucket in that appengine project and make it public
 4. Add required files to the GCS bucket
-3. Configure `EnvVar`s
+5. Configure `EnvVar`s
 
 #### Files in the bucket
 
@@ -38,3 +45,9 @@ application can be used properly:
 
 `whitelisted_emails`
 `bucket_name`
+`FLASK_SECRET_KEY` (generate from a [random password generator](https://passwordsgenerator.net/))
+`GOOGLE_CLIENT_ID`
+`GOOGLE_CLIENT_SECRET`
+
+The google client id and secret must be generated as an oauth web app client credential.
+This can be generated from the IAM page of the new project
