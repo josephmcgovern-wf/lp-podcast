@@ -1,6 +1,8 @@
-runtime: python27
-api_version: 1
-threadsafe: yes
+runtime: python39
+
+instance_class: F1
+
+entrypoint: uwsgi --http-socket :8080 --wsgi-file main.py --callable app --master --processes 1 --threads 2
 
 handlers:
 - url: /favicon\.ico
@@ -12,37 +14,20 @@ handlers:
   secure: always
 
 - url: /admin/.*
-  script: google.appengine.ext.admin.application
+  script: auto
   login: admin
   secure: always
 
 - url: .*
-  script: main.app
+  script: auto
 
 - url: /api/.*
-  script: main.app
+  script: auto
   secure: always
 
 - url: /.*
-  script: main.app
+  script: auto
   login: required
   auth_fail_action: redirect
   secure: always
-
-libraries:
-  - name: ssl
-    version: latest
-  - name: grpcio
-    version: 1.0.0
-
-skip_files:
-  - ^(.*/)?#.*#$
-  - ^(.*/)?.*~$
-  - ^(.*/)?.*\.py[co]$
-  - ^(.*/)?.*/RCS/.*$
-  - ^(.*/)?\..*$
-  - (.*/test/.*)
-  - (.*/test/.*)
-  - (venv/.*)
-  - ^tags$
 

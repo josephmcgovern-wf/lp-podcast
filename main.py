@@ -9,7 +9,6 @@ from flask_login import (
     login_user,
 )
 from oauthlib.oauth2 import WebApplicationClient
-from requests_toolbelt.adapters import appengine
 
 from src.api.podcast import setup_urls as api_podcast_setup_urls
 from src.auth.user import User
@@ -28,18 +27,11 @@ logging.getLogger("google.cloud.ndb._datastore_query").setLevel(logging.WARNING)
 # instances that have the old values
 GOOGLE_CLIENT_ID = EnvVar.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = EnvVar.get("GOOGLE_CLIENT_SECRET")
-GOOGLE_DISCOVERY_URL = (
-    "https://accounts.google.com/.well-known/openid-configuration"
-)
-
-appengine.monkeypatch()
-requests.packages.urllib3.disable_warnings(
-    requests.packages.urllib3.contrib.appengine.AppEnginePlatformWarning
-)
+GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 # Flask app setup
 app = Flask(__name__)
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
 app.secret_key = EnvVar.get("FLASK_SECRET_KEY") or os.urandom(24)
 
 # User session management setup
@@ -90,7 +82,7 @@ def callback():
         token_endpoint,
         authorization_response=request.url,
         redirect_url=request.base_url,
-        code=code
+        code=code,
     )
     token_response = requests.post(
         token_url,
@@ -118,9 +110,8 @@ def callback():
     else:
         return "User email not available or not verified by Google.", 401
 
-
     # Ensure email is supported
-    whitelisted_emails = EnvVar.get('whitelisted_emails')
+    whitelisted_emails = EnvVar.get("whitelisted_emails")
     if users_email not in whitelisted_emails:
         return "Forbidden", 401
 
@@ -133,7 +124,6 @@ def callback():
 
     # Send user back to homepage
     return redirect(url_for("home"))
-
 
 
 index_setup_urls(app)

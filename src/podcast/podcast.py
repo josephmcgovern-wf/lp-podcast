@@ -1,8 +1,8 @@
 import logging
 import math
-import urllib
 import xml.etree.ElementTree as ET
 from datetime import datetime
+from urllib.parse import unquote_plus
 from xml.dom import minidom
 
 from src import config
@@ -11,11 +11,11 @@ from src.gcs.bucket import Bucket
 
 class Podcast(object):
     NAMESPACES = {
-        'atom': 'http://www.w3.org/2005/Atom',
-        'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
-        'itunesu': 'http://www.itunesu.com/feed',
+        "atom": "http://www.w3.org/2005/Atom",
+        "itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd",
+        "itunesu": "http://www.itunesu.com/feed",
     }
-    PUBLISHED_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S CST'
+    PUBLISHED_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S CST"
 
     @property
     def duration_string(self):
@@ -25,11 +25,11 @@ class Podcast(object):
         hours = int(math.floor(total_minutes / 60))
         minutes_str = str(minutes)
         if minutes < 10:
-            minutes_str = '0' + minutes_str
+            minutes_str = "0" + minutes_str
         seconds_str = str(seconds)
         if seconds < 10:
-            seconds_str = '0' + seconds_str
-        return '%s:%s:%s' % (hours, minutes_str, seconds_str)
+            seconds_str = "0" + seconds_str
+        return "%s:%s:%s" % (hours, minutes_str, seconds_str)
 
     @property
     def published_date_string(self):
@@ -37,55 +37,54 @@ class Podcast(object):
         month = self.date_recorded.month
         day = self.date_recorded.day
         date = datetime(year, month, day, 11, 30)
-        return date.strftime('%a, %d %b %Y %H:%M:%S CST')
+        return date.strftime("%a, %d %b %Y %H:%M:%S CST")
 
     @classmethod
     def fetch_all(cls):
         tree = cls._xml_tree()
-        channel = tree.find('channel')
-        return [
-            cls._convert_element_to_dict(i) for i in
-            channel.findall('item')
-        ]
+        channel = tree.find("channel")
+        return [cls._convert_element_to_dict(i) for i in channel.findall("item")]
 
     @classmethod
     def _write_tree(cls, tree):
         logging.debug("Updating feed...")
-        ugly_xml = ET.tostring(tree).replace('\n', '')
-        xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ").encode(
-            'utf-8')
+        ugly_xml = ET.tostring(tree, encoding="unicode").replace("\n", "")
+        xml = minidom.parseString(ugly_xml).toprettyxml(indent="  ").encode("utf-8")
         Bucket.update_file_contents(config.FEED_PATH, xml, content_type="text/xml")
 
     @classmethod
     def add_episode(cls, episode_data):
         tree = cls._xml_tree()
-        channel = tree.find('channel')
+        channel = tree.find("channel")
         channel.append(cls._convert_dict_to_element(episode_data))
         cls._write_tree(tree)
 
     @classmethod
     def edit_episode(
-            cls, episode_id, name=None, description=None, subtitle=None, date_recorded=None):
+        cls, episode_id, name=None, description=None, subtitle=None, date_recorded=None
+    ):
         tree = cls._xml_tree()
-        channel = tree.find('channel')
-        for item in channel.findall('item'):
-            if item.find('guid').text == episode_id:
+        channel = tree.find("channel")
+        for item in channel.findall("item"):
+            if item.find("guid").text == episode_id:
                 if name:
-                    item.find('title').text = name
+                    item.find("title").text = name
                 if description:
-                    item.find('description').text = description
-                    item.find('itunes:summary', cls.NAMESPACES).text = description
+                    item.find("description").text = description
+                    item.find("itunes:summary", cls.NAMESPACES).text = description
                 if subtitle:
-                    item.find('itunes:subtitle', cls.NAMESPACES).text = subtitle
+                    item.find("itunes:subtitle", cls.NAMESPACES).text = subtitle
                 if date_recorded:
                     time_published = datetime(
                         date_recorded.year,
                         date_recorded.month,
                         date_recorded.day,
                         11,
-                        30
+                        30,
                     )
-                    item.find('pubDate').text = time_published.strftime(cls.PUBLISHED_DATE_FORMAT)
+                    item.find("pubDate").text = time_published.strftime(
+                        cls.PUBLISHED_DATE_FORMAT
+                    )
                 break
         cls._write_tree(tree)
 
@@ -94,23 +93,23 @@ class Podcast(object):
         # Remove episode from rss feed
         audio_file_url = None
         tree = cls._xml_tree()
-        channel = tree.find('channel')
-        for item in channel.findall('item'):
-            if item.find('guid').text == episode_id:
-                audio_file_url = item.find('enclosure').attrib['url']
+        channel = tree.find("channel")
+        for item in channel.findall("item"):
+            if item.find("guid").text == episode_id:
+                audio_file_url = item.find("enclosure").attrib["url"]
                 channel.remove(item)
                 logging.debug("Found episode and removed it from tree!")
                 break
         else:
-            raise Exception('No episode found with id {}'.format(episode_id))
+            raise Exception("No episode found with id {}".format(episode_id))
         cls._write_tree(tree)
 
         logging.debug("Deleting audio file...")
         # Delete audio file from bucket
-        formatted_bucket_name = '/{}/'.format(config.BUCKET_NAME)
+        formatted_bucket_name = "/{}/".format(config.BUCKET_NAME)
         parts = audio_file_url.split(formatted_bucket_name)
         audio_filepath = parts[-1]
-        Bucket.delete_file(urllib.unquote_plus(audio_filepath))
+        Bucket.delete_file(unquote_plus(audio_filepath))
 
     @classmethod
     def _convert_element_to_dict(cls, element):
@@ -118,40 +117,48 @@ class Podcast(object):
             namespaces = namespaces or {}
             return element.find(value, namespaces).text
 
-        audio_file_info = element.find('enclosure').attrib
+        audio_file_info = element.find("enclosure").attrib
         return {
-            'name': getvalue(element, 'title'),
-            'description': getvalue(element, 'description'),
-            'subtitle': getvalue(element, 'itunes:subtitle', namespaces=cls.NAMESPACES),
-            'audio_file_url': audio_file_info['url'],
-            'audio_file_length': audio_file_info['length'],
-            'id': audio_file_info['url'],
-            'date_recorded': datetime.strptime(
-                getvalue(element, 'pubDate'), cls.PUBLISHED_DATE_FORMAT)
+            "name": getvalue(element, "title"),
+            "description": getvalue(element, "description"),
+            "subtitle": getvalue(element, "itunes:subtitle", namespaces=cls.NAMESPACES),
+            "audio_file_url": audio_file_info["url"],
+            "audio_file_length": audio_file_info["length"],
+            "id": audio_file_info["url"],
+            "date_recorded": datetime.strptime(
+                getvalue(element, "pubDate"), cls.PUBLISHED_DATE_FORMAT
+            ),
         }
 
     @classmethod
     def _convert_dict_to_element(cls, data):
-        root = ET.Element('item')
-        ET.SubElement(root, 'title').text = data['name']
-        ET.SubElement(root, 'description').text = data['description']
-        ET.SubElement(root, 'itunes:summary').text = data['description']
-        ET.SubElement(root, 'itunes:subtitle').text = data['subtitle']
-        ET.SubElement(root, 'itunes:explicit').text = 'no'
+        root = ET.Element("item")
+        ET.SubElement(root, "title").text = data["name"]
+        ET.SubElement(root, "description").text = data["description"]
+        ET.SubElement(root, "itunes:summary").text = data["description"]
+        ET.SubElement(root, "itunes:subtitle").text = data["subtitle"]
+        ET.SubElement(root, "itunes:explicit").text = "no"
         ET.SubElement(
-            root, 'enclosure', url=data['audio_file_url'], type='audio/mpeg',
-            length=str(data['audio_file_length']))
-        ET.SubElement(root, 'guid').text = data['audio_file_url']
-        ET.SubElement(root, 'itunes:duration').text = cls._formatted_duration(data['duration'])
-        time_published = datetime(
-            data['date_recorded'].year,
-            data['date_recorded'].month,
-            data['date_recorded'].day,
-            11,
-            30
+            root,
+            "enclosure",
+            url=data["audio_file_url"],
+            type="audio/mpeg",
+            length=str(data["audio_file_length"]),
         )
-        ET.SubElement(root, 'pubDate').text = time_published.strftime(
-            cls.PUBLISHED_DATE_FORMAT)
+        ET.SubElement(root, "guid").text = data["audio_file_url"]
+        ET.SubElement(root, "itunes:duration").text = cls._formatted_duration(
+            data["duration"]
+        )
+        time_published = datetime(
+            data["date_recorded"].year,
+            data["date_recorded"].month,
+            data["date_recorded"].day,
+            11,
+            30,
+        )
+        ET.SubElement(root, "pubDate").text = time_published.strftime(
+            cls.PUBLISHED_DATE_FORMAT
+        )
         return root
 
     @staticmethod
@@ -162,19 +169,17 @@ class Podcast(object):
         hours = int(math.floor(total_minutes / 60))
         minutes_str = str(minutes)
         if minutes < 10:
-            minutes_str = '0' + minutes_str
+            minutes_str = "0" + minutes_str
         seconds_str = str(seconds)
         if seconds < 10:
-            seconds_str = '0' + seconds_str
-        return '%s:%s:%s' % (hours, minutes_str, seconds_str)
+            seconds_str = "0" + seconds_str
+        return "%s:%s:%s" % (hours, minutes_str, seconds_str)
 
     @classmethod
     def _xml_tree(cls):
         contents = Bucket.get_file_contents(config.FEED_PATH)
-        ET.register_namespace('atom', 'http://www.w3.org/2005/Atom')
-        ET.register_namespace(
-            'itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
-        ET.register_namespace('itunesu', 'http://www.itunesu.com/feed')
+        ET.register_namespace("atom", "http://www.w3.org/2005/Atom")
+        ET.register_namespace("itunes", "http://www.itunes.com/dtds/podcast-1.0.dtd")
+        ET.register_namespace("itunesu", "http://www.itunesu.com/feed")
         tree = ET.fromstring(contents)
         return tree
-
