@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+  <channel>
+    <link>TODO: https://www.livethemessage.org/</link>
+    <language>en-us</language>
+    <copyright>TODO: ©2017</copyright>
+    <webMaster>TODO: drew@livethemessage.org (Drew Meyer)</webMaster>
+    <managingEditor>joe.m.mcgovern@gmail.com (Joe McGovern)</managingEditor>
+    <image>
+      <url>TODO: https://www.livethemessage.org</url>
+      <title>TODO: LifePointe Church</title>
+      <link>TODO: https://storage.googleapis.com/lp-podcast.appspot.com/image/logo.png</link>
+    </image>
+    <itunes:owner>
+      <itunes:name>TODO: Drew Meyer</itunes:name>
+      <itunes:email>TODO: drew@livethemessage.org</itunes:email>
+    </itunes:owner>
+    <itunes:category text="TODO: Religion &amp; Spirituality">
+      <itunes:category text="TODO: Christianity"/>
+    </itunes:category>
+    <itunes:keywords>TODO: lifepointe, life, church, holy, holy spirit, god, ames, drew, drew meyer, sermon, sermons, iowa, bible, scripture, father, jesus, pointe</itunes:keywords>
+    <itunes:explicit>no</itunes:explicit>
+    <itunes:image href="TODO: https://storage.googleapis.com/lp-podcast.appspot.com/image/logo.png"/>
+    <atom:link href="TODO: https://storage.googleapis.com/lp-podcast.appspot.com/rss/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>TODO: Thu, 03 Aug 2017 21:21:00 CST</pubDate>
+    <title>TODO: LifePointe Church Sermon of the Week</title>
+    <itunes:author>TODO: LifePointe Church</itunes:author>
+    <description>TODO: LifePointe Church is a community passionate about cultivating a friendship with the Holy Spirit and discovering the life-giving truths of Scripture. Our mission is simple: to live out the message of Jesus Christ. For more information please visit https://www.livethemessage.org</description>
+    <itunes:summary>TODO: LifePointe Church is a community passionate about cultivating a friendship with the Holy Spirit and discovering the life-giving truths of Scripture. Our mission is simple: to live out the message of Jesus Christ. For more information please visit https://www.livethemessage.org</itunes:summary>
+    <itunes:subtitle>TODO: LifePointe Church Ames</itunes:subtitle>
+  </channel>
+</rss>
